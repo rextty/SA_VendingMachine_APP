@@ -12,10 +12,10 @@
     下訂
     查看訂單
     付款
+    QRCode
 
     develop:
     查看報表
-
       -->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

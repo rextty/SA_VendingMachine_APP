@@ -49,6 +49,10 @@ public class MainActivity extends AppCompatActivity {
         // 檢查權限
         checkPermission();
 
+        Intent intent = new Intent();
+        intent.setClass(MainActivity.this, NavigationDrawerActivity.class);
+        startActivity(intent);
+
 //        googleSignInClient.signOut();
     }
 

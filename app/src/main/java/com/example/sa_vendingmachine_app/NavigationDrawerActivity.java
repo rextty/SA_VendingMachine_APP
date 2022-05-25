@@ -5,58 +5,71 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
-import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Criteria;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
+import com.example.sa_vendingmachine_app.Model.ExecuteSQL;
+import com.example.sa_vendingmachine_app.Model.SQLExecuteTypeEnum;
+import com.example.sa_vendingmachine_app.Model.VendingMachineDAL;
 import com.example.sa_vendingmachine_app.databinding.ActivityNavigationDrawerBinding;
+import com.example.sa_vendingmachine_app.databinding.VendingMachineInfoBinding;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.navigation.NavigationView;
 
-public class NavigationDrawerActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+public class NavigationDrawerActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private static final String TAG = "Debugger ";
 
     // Google Map
     private GoogleMap map;
-    private MarkerOptions locationMarker;
+    private Location lastKnownLocation;
+    private CameraPosition cameraPosition;
 
-    //GPS
-    private Criteria criteria;
-    private Location myLocation;
-    private LocationManager myLocationManager;
+    private final LatLng defaultLocation = new LatLng(23.694377, 120.5347449);
+    private static final int DEFAULT_ZOOM = 15;
+    private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
+    private boolean locationPermissionGranted;
 
-    private double schoolLatitude;
-    private double schoolLongitude;
+    private PlacesClient placesClient;
+    private FusedLocationProviderClient fusedLocationProviderClient;
 
-    private String bestProvider;
-    private double lastKnowLatitude;
-    private double lastKnowLongitude;
-
-    private boolean hasLastLatitude = false;
-    private boolean hasLastLongitude = false;
+    // Last Data
+    private static final String KEY_CAMERA_POSITION = "camera_position";
+    private static final String KEY_LOCATION = "location";
 
     // SideBar
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
-    private Toolbar toolbar;
 
     // UI Binding
     private ActivityNavigationDrawerBinding UI;
@@ -65,42 +78,26 @@ public class NavigationDrawerActivity extends AppCompatActivity implements OnMap
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Get last data.
+        if (savedInstanceState != null) {
+            lastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
+            cameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
+        }
+
         // UI Binding
         UI = ActivityNavigationDrawerBinding.inflate(getLayoutInflater());
         setContentView(UI.getRoot());
 
-        schoolLatitude = 23.694377;
-        schoolLongitude = 120.5347449;
+        Places.initialize(getApplicationContext(), "AIzaSyA1QHyXbqjLUehGJhYcUQ8am0r2LZVMrBA");
+        placesClient = Places.createClient(this);
+
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
         // init Navigation Drawer
         initNavigationDrawer();
 
         // Google Map init
         initGoogleMap();
-
-        locationInitialize();
-    }
-
-    private void locationInitialize() {
-        myLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
-        criteria = new Criteria();
-        criteria.setCostAllowed(true); // 付費
-        criteria.setSpeedRequired(true); // 移動速度
-        criteria.setBearingRequired(true); // 方位
-        criteria.setAltitudeRequired(true); // 高度
-        criteria.setAccuracy(Criteria.ACCURACY_FINE); // 精準度
-        criteria.setPowerRequirement(Criteria.POWER_LOW); // 耗電
-
-        if (myLocationManager != null) {
-            if (checkLocationPermission())
-                return;
-
-            bestProvider = myLocationManager.getBestProvider(criteria, true);
-            myLocation = myLocationManager.getLastKnownLocation(bestProvider); //TODO:LocationManager.NETWORK_PROVIDER
-
-            Log.e(TAG, "locationInitialize-BestProvider: " + bestProvider);
-        }
     }
 
     private void initGoogleMap() {
@@ -113,9 +110,9 @@ public class NavigationDrawerActivity extends AppCompatActivity implements OnMap
         // SideBar
         drawerLayout = UI.drawerLayout;
         navigationView = UI.navigationView;
-        toolbar = UI.toolbar;
 
         // Toolbar init
+        Toolbar toolbar = UI.toolbar;
         setSupportActionBar(toolbar);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close
@@ -124,6 +121,7 @@ public class NavigationDrawerActivity extends AppCompatActivity implements OnMap
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
+        // Listener
         navigationView.setNavigationItemSelectedListener(item -> {
             drawerLayout.closeDrawer(GravityCompat.START);
 
@@ -139,34 +137,6 @@ public class NavigationDrawerActivity extends AppCompatActivity implements OnMap
         });
     }
 
-    // 取得緯度
-    public double getLatitude() {
-        if (myLocation == null) {
-            if (hasLastLatitude)
-                return lastKnowLatitude;
-
-            return schoolLatitude;
-        }
-
-        hasLastLatitude = true;
-        lastKnowLatitude = myLocation.getLatitude();
-        return lastKnowLatitude;
-    }
-
-    // 取得經度
-    public double getLongitude() {
-        if (myLocation == null) {
-            if (hasLastLongitude)
-                return lastKnowLongitude;
-
-            return schoolLongitude;
-        }
-
-        hasLastLongitude = true;
-        lastKnowLongitude = myLocation.getLongitude();
-        return lastKnowLongitude;
-    }
-
     private boolean checkLocationPermission() {
         return ActivityCompat.checkSelfPermission(NavigationDrawerActivity.this,
                 Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
@@ -174,51 +144,181 @@ public class NavigationDrawerActivity extends AppCompatActivity implements OnMap
                         Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED;
     }
 
+    private void getLocationPermission() {
+        List<String> permissionList = new ArrayList<>();
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)    // GPS
+            permissionList.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        else
+            locationPermissionGranted = true;
+
+        if (!permissionList.isEmpty())
+            ActivityCompat.requestPermissions(this, permissionList.toArray(new String[0]), PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+    }
+
+    private void initVendingMachineMaker() {
+        String sql = "SELECT name,ST_X(location),ST_Y(location),state FROM vending_machine.vending_machine;";
+
+        ExecuteSQL executeSQL = new ExecuteSQL();
+        executeSQL.setSql(sql);
+        executeSQL.setType(SQLExecuteTypeEnum.QUERY);
+        executeSQL.execute();
+
+        ResultSet rs = executeSQL.getResultSet();
+        try {
+            while (rs.next()) {
+                MarkerOptions markerOptions = new MarkerOptions();
+                LatLng latLng = new LatLng(
+                        rs.getDouble("ST_X(location)"), rs.getDouble("ST_Y(location)")
+                );
+                markerOptions.title(rs.getString("name"));
+                markerOptions.position(latLng);
+                markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.vending_machine2));
+                markerOptions.snippet(rs.getString("state"));
+                map.addMarker(markerOptions);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        if (map != null) {
+            outState.putParcelable(KEY_CAMERA_POSITION, map.getCameraPosition());
+            outState.putParcelable(KEY_LOCATION, lastKnownLocation);
+        }
+        super.onSaveInstanceState(outState);
+    }
+
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         map = googleMap;
+        map.setPadding(0, 130, 0, 0);
 
-        float zoomLevel = 16.0f;
-        LatLng sydney = new LatLng(schoolLatitude,schoolLongitude);
+        // Prompt the user for permission.
+        getLocationPermission();
 
-        locationMarker = new MarkerOptions().position(sydney).title("Marker in Sydney");
+        // Turn on the My Location layer and the related control on the map.
+        updateLocationUI();
 
-        map.addMarker(locationMarker);
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, zoomLevel));
+        // Get the current location of the device and set the position of the map.
+        getDeviceLocation();
+
+        initVendingMachineMaker();
+
+        this.map.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+            @Override
+            // Return null here, so that getInfoContents() is called next.
+            public View getInfoWindow(Marker arg0) {
+                return null;
+            }
+
+            @Override
+            public View getInfoContents(Marker marker) {
+                VendingMachineInfoBinding ui = VendingMachineInfoBinding.inflate(getLayoutInflater());
+                ui.vendingNameTextView.setText(marker.getTitle());
+                ui.vendingStateTextView.setText(marker.getSnippet());
+
+                if (Objects.equals(marker.getSnippet(), "維修中"))
+                    ui.vendingStateTextView.setBackground(ContextCompat.getDrawable(NavigationDrawerActivity.this, R.drawable.red_background));
+
+                return ui.getRoot();
+            }
+        });
+
+        this.map.setOnInfoWindowClickListener(marker -> {
+            ArrayList<String> data = new ArrayList<>();
+            data.add(marker.getTitle());
+            data.add(marker.getSnippet());
+
+            if (Objects.equals(marker.getSnippet(), "維修中")) {
+                Toast.makeText(this, "This Vending Machine is in maintenance.", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            Intent intent = new Intent(this, VendingMachine.class);
+            intent.putExtra("data", data);
+            startActivity(intent);
+        });
     }
 
     @Override
-    public void onLocationChanged(Location location) {
-        myLocation = location;
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        locationPermissionGranted = false;
 
-        float zoomLevel = 16.0f;
-        LatLng sydney = new LatLng(location.getLatitude(), location.getLongitude());
-
-        locationMarker = new MarkerOptions().position(sydney).title("Marker in Sydney");
-
-        map.clear();
-        map.addMarker(locationMarker);
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, zoomLevel));
-
-        Log.d(TAG + "位置改變 ", "緯度:" + location.getLatitude() + " 經度:" + location.getLongitude());
+        if (requestCode
+                == PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION) {// If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                locationPermissionGranted = true;
+            }
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+        updateLocationUI();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
+    private void getDeviceLocation() {
+        /*
+         * Get the best and most recent location of the device, which may be null in rare
+         * cases when a location is not available.
+         */
+        try {
+            if (locationPermissionGranted) {
+                if (checkLocationPermission())
+                    return;
+
+                Task<Location> locationResult = fusedLocationProviderClient.getLastLocation();
+                locationResult.addOnCompleteListener(this, new OnCompleteListener<Location>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Location> task) {
+                        if (task.isSuccessful()) {
+                            // Set the map's camera position to the current location of the device.
+                            lastKnownLocation = task.getResult();
+                            if (lastKnownLocation != null) {
+                                map.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                        new LatLng(lastKnownLocation.getLatitude(),
+                                                lastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+                            }
+                        } else {
+                            Log.d(TAG, "Current location is null. Using defaults.");
+                            Log.e(TAG, "Exception: %s", task.getException());
+                            map.moveCamera(CameraUpdateFactory
+                                    .newLatLngZoom(defaultLocation, DEFAULT_ZOOM));
+                            map.getUiSettings().setMyLocationButtonEnabled(false);
+                        }
+                    }
+                });
+            }
+        } catch (SecurityException e)  {
+            Log.e("Exception: %s", e.getMessage(), e);
+        }
+    }
+
+    private void updateLocationUI() {
+        if (map == null) {
+            return;
+        }
+
         if (checkLocationPermission())
             return;
 
-        myLocationManager.requestLocationUpdates(bestProvider, 1000, 0, this);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
+        try {
+            if (locationPermissionGranted) {
+                map.setMyLocationEnabled(true);
+                map.getUiSettings().setMyLocationButtonEnabled(true);
+            } else {
+                map.setMyLocationEnabled(false);
+                map.getUiSettings().setMyLocationButtonEnabled(false);
+                lastKnownLocation = null;
+                getLocationPermission();
+            }
+        } catch (SecurityException e)  {
+            Log.e("Exception: %s", e.getMessage());
+        }
     }
 }

@@ -157,7 +157,7 @@ public class NavigationDrawerActivity extends AppCompatActivity implements OnMap
     }
 
     private void initVendingMachineMaker() {
-        String sql = "SELECT name,ST_X(location),ST_Y(location),state FROM vending_machine.vending_machine;";
+        String sql = "SELECT serialNumber,name,ST_X(location),ST_Y(location),state FROM vending_machine.vending_machine;";
 
         ExecuteSQL executeSQL = new ExecuteSQL();
         executeSQL.setSql(sql);
@@ -174,7 +174,11 @@ public class NavigationDrawerActivity extends AppCompatActivity implements OnMap
                 markerOptions.title(rs.getString("name"));
                 markerOptions.position(latLng);
                 markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.vending_machine2));
-                markerOptions.snippet(rs.getString("state"));
+                markerOptions.snippet(
+                        String.format(
+                                "%s,%s", rs.getString("state"), rs.getString("serialNumber")
+                        )
+                );
                 map.addMarker(markerOptions);
             }
         } catch (SQLException e) {
@@ -219,7 +223,7 @@ public class NavigationDrawerActivity extends AppCompatActivity implements OnMap
             public View getInfoContents(Marker marker) {
                 VendingMachineInfoBinding ui = VendingMachineInfoBinding.inflate(getLayoutInflater());
                 ui.vendingNameTextView.setText(marker.getTitle());
-                ui.vendingStateTextView.setText(marker.getSnippet());
+                ui.vendingStateTextView.setText(marker.getSnippet().split(",")[0]);
 
                 if (Objects.equals(marker.getSnippet(), "維修中"))
                     ui.vendingStateTextView.setBackground(ContextCompat.getDrawable(NavigationDrawerActivity.this, R.drawable.red_background));
@@ -229,9 +233,7 @@ public class NavigationDrawerActivity extends AppCompatActivity implements OnMap
         });
 
         this.map.setOnInfoWindowClickListener(marker -> {
-            ArrayList<String> data = new ArrayList<>();
-            data.add(marker.getTitle());
-            data.add(marker.getSnippet());
+            String data = marker.getSnippet().split(",")[1];
 
             if (Objects.equals(marker.getSnippet(), "維修中")) {
                 Toast.makeText(this, "This Vending Machine is in maintenance.", Toast.LENGTH_LONG).show();

@@ -13,6 +13,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.sa_vendingmachine_app.Model.ExecuteSQL;
+import com.example.sa_vendingmachine_app.Model.SQLExecuteTypeEnum;
 import com.example.sa_vendingmachine_app.databinding.ActivityMainBinding;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -28,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding UI;
 
-    private final String TAG = "Debugger ";
+    private final String TAG = MainActivity.class.getSimpleName();
 
     private GoogleSignInOptions googleSignInOptions;
 
@@ -49,11 +51,11 @@ public class MainActivity extends AppCompatActivity {
         // 檢查權限
         checkPermission();
 
-        Intent intent = new Intent();
-        intent.setClass(MainActivity.this, NavigationDrawerActivity.class);
-        startActivity(intent);
+//        Intent intent = new Intent();
+//        intent.setClass(MainActivity.this, NavigationDrawerActivity.class);
+//        startActivity(intent);
 
-//        googleSignInClient.signOut();
+        googleSignInClient.signOut();
     }
 
     private void checkPermission() {

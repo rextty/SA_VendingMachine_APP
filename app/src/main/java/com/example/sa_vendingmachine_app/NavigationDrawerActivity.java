@@ -48,7 +48,7 @@ import java.util.Objects;
 
 public class NavigationDrawerActivity extends AppCompatActivity implements OnMapReadyCallback {
 
-    private static final String TAG = "Debugger ";
+    private static final String TAG = NavigationDrawerActivity.class.getSimpleName();
 
     // Google Map
     private GoogleMap map;
@@ -93,6 +93,10 @@ public class NavigationDrawerActivity extends AppCompatActivity implements OnMap
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+
         // init Navigation Drawer
         initNavigationDrawer();
 
@@ -100,11 +104,7 @@ public class NavigationDrawerActivity extends AppCompatActivity implements OnMap
         initGoogleMap();
     }
 
-    private void initGoogleMap() {
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-    }
+    private void initGoogleMap() {}
 
     private void initNavigationDrawer() {
         // SideBar
@@ -184,7 +184,6 @@ public class NavigationDrawerActivity extends AppCompatActivity implements OnMap
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
     }
 
     @Override
@@ -225,7 +224,7 @@ public class NavigationDrawerActivity extends AppCompatActivity implements OnMap
                 ui.vendingNameTextView.setText(marker.getTitle());
                 ui.vendingStateTextView.setText(marker.getSnippet().split(",")[0]);
 
-                if (Objects.equals(marker.getSnippet(), "維修中"))
+                if (Objects.equals(marker.getSnippet().split(",")[0], "維修中"))
                     ui.vendingStateTextView.setBackground(ContextCompat.getDrawable(NavigationDrawerActivity.this, R.drawable.red_background));
 
                 return ui.getRoot();
@@ -235,11 +234,12 @@ public class NavigationDrawerActivity extends AppCompatActivity implements OnMap
         this.map.setOnInfoWindowClickListener(marker -> {
             String data = marker.getSnippet().split(",")[1];
 
-            if (Objects.equals(marker.getSnippet(), "維修中")) {
+            if (Objects.equals(marker.getSnippet().split(",")[0], "維修中")) {
                 Toast.makeText(this, "This Vending Machine is in maintenance.", Toast.LENGTH_LONG).show();
                 return;
             }
 
+            // 會鎖畫面
             Intent intent = new Intent(this, VendingMachine.class);
             intent.putExtra("data", data);
             startActivity(intent);

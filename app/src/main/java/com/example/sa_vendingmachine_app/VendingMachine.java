@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.sa_vendingmachine_app.Model.ExecuteSQL;
 import com.example.sa_vendingmachine_app.Model.SQLExecuteTypeEnum;
@@ -20,6 +21,7 @@ import com.example.sa_vendingmachine_app.databinding.ActivityVendingMachineBindi
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,6 +50,51 @@ public class VendingMachine extends AppCompatActivity {
 
         scrollViewLinearLayout = UI.scrollViewLinearLayout;
 
+        initProductItem();
+
+        UI.sendButton.setOnClickListener(v -> {
+            preOrder();
+        });
+    }
+
+    private void preOrder() {
+        int totalQuantity = 0;
+        for (Object[] obj : productList) {
+            totalQuantity += Integer.parseInt(((TextView) obj[1]).getText().toString());
+        }
+
+        if (totalQuantity == 0) {
+            Toast.makeText(this, "shopping list is empty", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        for (Object[] obj : productList) {
+            int quantity = Integer.parseInt(((TextView) obj[1]).getText().toString());;
+
+            String dateFormat = "yyyy-MM-dd HH:mm:ss";
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(dateFormat);
+
+            if (quantity != 0) {
+                for (int i = 0; i < quantity; i++) {
+                    String sql = String.format(
+                            "INSERT INTO vending_machine.sales_record (productId, machineSerialNumber, date) VALUES ('%s', '%s', '%s');",
+                            obj[0],
+                            vendingMachineSerialNumber,
+                            simpleDateFormat.format(new java.util.Date())
+                    );
+
+                    ExecuteSQL executeSQL = new ExecuteSQL();
+                    executeSQL.setSql(sql);
+                    executeSQL.setType(SQLExecuteTypeEnum.UPDATE);
+                    executeSQL.execute();
+                }
+                Toast.makeText(this, "Success.", Toast.LENGTH_LONG).show();
+                finish();
+            }
+        }
+    }
+
+    private void initProductItem() {
         String sql = "SELECT * FROM vending_machine.product;";
 
         ExecuteSQL executeSQL = new ExecuteSQL();
@@ -155,6 +202,5 @@ public class VendingMachine extends AppCompatActivity {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
     }
 }

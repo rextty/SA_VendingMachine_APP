@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "360842512331",
+    "project_id": "sa-vendingmachine-app",
+    "storage_bucket": "sa-vendingmachine-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:360842512331:android:d21a786a1b704fe872d84e",
+        "android_client_info": {
+          "package_name": "com.example.sa_vendingmachine_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "360842512331-4oa83b4a730a5ppb8dh1qadcimbi7n82.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.sa_vendingmachine_app",
+            "certificate_hash": "7a8579c3c7a23d87d138a3862871722a4e23d7e4"
+          }
+        },
+        {
+          "client_id": "360842512331-7jki9ch9k4ps27t3k07aei48lpmcappj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCCXDkJYVvxwthbT4xrok0QHT96AvIMGbs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "360842512331-7jki9ch9k4ps27t3k07aei48lpmcappj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

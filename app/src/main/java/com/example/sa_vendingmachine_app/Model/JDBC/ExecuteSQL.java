@@ -1,7 +1,4 @@
-package com.example.sa_vendingmachine_app.Model;
-
-import android.os.StrictMode;
-import android.util.Log;
+package com.example.sa_vendingmachine_app.Model.JDBC;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

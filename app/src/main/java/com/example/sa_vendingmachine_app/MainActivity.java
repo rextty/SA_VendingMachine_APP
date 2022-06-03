@@ -13,8 +13,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.example.sa_vendingmachine_app.Model.ExecuteSQL;
-import com.example.sa_vendingmachine_app.Model.SQLExecuteTypeEnum;
 import com.example.sa_vendingmachine_app.databinding.ActivityMainBinding;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -51,11 +49,13 @@ public class MainActivity extends AppCompatActivity {
         // 檢查權限
         checkPermission();
 
-//        Intent intent = new Intent();
+        Intent intent = new Intent();
 //        intent.setClass(MainActivity.this, NavigationDrawerActivity.class);
-//        startActivity(intent);
+//        intent.setClass(MainActivity.this, FunctionalActivity.class);
+        intent.setClass(MainActivity.this, VendingMachineActivity.class);
+        startActivity(intent);
 
-        googleSignInClient.signOut();
+//        googleSignInClient.signOut();
     }
 
     private void checkPermission() {

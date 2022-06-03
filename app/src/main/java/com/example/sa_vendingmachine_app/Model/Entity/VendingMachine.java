@@ -1,14 +1,14 @@
-package com.example.sa_vendingmachine_app.Model;
+package com.example.sa_vendingmachine_app.Model.Entity;
 
-public class VendingMachineDAL {
+public class VendingMachine {
 
     private String name;
 
     private String state;
 
-    public VendingMachineDAL() {}
+    public VendingMachine() {}
 
-    public VendingMachineDAL(String name, String state) {
+    public VendingMachine(String name, String state) {
         this.name = name;
         this.state = state;
     }

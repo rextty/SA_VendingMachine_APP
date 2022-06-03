@@ -1,5 +1,7 @@
 package com.example.sa_vendingmachine_app.Model.Entity;
 
+import java.sql.Blob;
+
 public class PreOrder {
 
     private String productId;
@@ -10,9 +12,11 @@ public class PreOrder {
 
     private String orderDate;
 
-    private String expiredDate;
+    private String expireDate;
 
     private boolean isTake;
+
+    private Blob qrcode;
 
     public PreOrder() {}
 
@@ -20,8 +24,8 @@ public class PreOrder {
         this.productId = productId;
     }
 
-    public void setExpiredDate(String expiredDate) {
-        this.expiredDate = expiredDate;
+    public void setExpireDate(String expireDate) {
+        this.expireDate = expireDate;
     }
 
     public void setMachineSerialNumber(String machineSerialNumber) {
@@ -44,8 +48,8 @@ public class PreOrder {
         return productId;
     }
 
-    public String getExpiredDate() {
-        return expiredDate;
+    public String getExpireDate() {
+        return expireDate;
     }
 
     public String getMachineSerialNumber() {
@@ -62,5 +66,13 @@ public class PreOrder {
 
     public boolean getTake() {
         return isTake;
+    }
+
+    public void setQrcode(Blob qrcode) {
+        this.qrcode = qrcode;
+    }
+
+    public Blob getQrcode() {
+        return qrcode;
     }
 }

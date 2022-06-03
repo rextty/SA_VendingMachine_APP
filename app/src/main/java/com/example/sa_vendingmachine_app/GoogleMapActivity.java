@@ -1,13 +1,9 @@
 package com.example.sa_vendingmachine_app;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.Manifest;
 import android.content.Intent;
@@ -18,9 +14,11 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.example.sa_vendingmachine_app.Model.Entity.MarkerEntity;
 import com.example.sa_vendingmachine_app.Model.JDBC.ExecuteSQL;
 import com.example.sa_vendingmachine_app.Model.JDBC.SQLExecuteTypeEnum;
-import com.example.sa_vendingmachine_app.databinding.ActivityNavigationDrawerBinding;
+import com.example.sa_vendingmachine_app.Service.MapService;
+import com.example.sa_vendingmachine_app.databinding.ActivityGoogleMapBinding;
 import com.example.sa_vendingmachine_app.databinding.VendingMachineInfoBinding;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -37,17 +35,17 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.net.PlacesClient;
-import com.google.android.material.navigation.NavigationView;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.PropertyPermission;
 
-public class NavigationDrawerActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class GoogleMapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
-    private static final String TAG = NavigationDrawerActivity.class.getSimpleName();
+    private static final String TAG = GoogleMapActivity.class.getSimpleName();
 
     // Google Map
     private GoogleMap map;
@@ -66,12 +64,10 @@ public class NavigationDrawerActivity extends AppCompatActivity implements OnMap
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
 
-    // SideBar
-    private DrawerLayout drawerLayout;
-    private NavigationView navigationView;
+    private MapService mapService = new MapService();
 
     // UI Binding
-    private ActivityNavigationDrawerBinding UI;
+    private ActivityGoogleMapBinding UI;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,9 +80,13 @@ public class NavigationDrawerActivity extends AppCompatActivity implements OnMap
         }
 
         // UI Binding
-        UI = ActivityNavigationDrawerBinding.inflate(getLayoutInflater());
+        UI = ActivityGoogleMapBinding.inflate(getLayoutInflater());
         setContentView(UI.getRoot());
 
+        initGoogleMap();
+    }
+
+    private void initGoogleMap() {
         Places.initialize(getApplicationContext(), "AIzaSyA1QHyXbqjLUehGJhYcUQ8am0r2LZVMrBA");
         placesClient = Places.createClient(this);
 
@@ -95,51 +95,12 @@ public class NavigationDrawerActivity extends AppCompatActivity implements OnMap
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
-        // init Navigation Drawer
-        initNavigationDrawer();
-
-        // Google Map init
-        initGoogleMap();
-    }
-
-    private void initGoogleMap() {}
-
-    private void initNavigationDrawer() {
-        // SideBar
-        drawerLayout = UI.drawerLayout;
-        navigationView = UI.navigationView;
-
-        // Toolbar init
-        Toolbar toolbar = UI.toolbar;
-        setSupportActionBar(toolbar);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close
-        );
-
-        drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
-
-        // Listener
-        navigationView.setNavigationItemSelectedListener(item -> {
-            drawerLayout.closeDrawer(GravityCompat.START);
-
-            int id = item.getItemId();
-            if (id == R.id.action_home) {
-                Toast.makeText(NavigationDrawerActivity.this, "首頁", Toast.LENGTH_SHORT).show();
-                return true;
-            } else if (id == R.id.action_help) {
-                Toast.makeText(NavigationDrawerActivity.this, "使用說明", Toast.LENGTH_SHORT).show();
-                return true;
-            }
-            return false;
-        });
     }
 
     private boolean checkLocationPermission() {
-        return ActivityCompat.checkSelfPermission(NavigationDrawerActivity.this,
+        return ActivityCompat.checkSelfPermission(GoogleMapActivity.this,
                 Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(NavigationDrawerActivity.this,
+                ActivityCompat.checkSelfPermission(GoogleMapActivity.this,
                         Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED;
     }
 
@@ -156,32 +117,22 @@ public class NavigationDrawerActivity extends AppCompatActivity implements OnMap
     }
 
     private void initVendingMachineMaker() {
-        String sql = "SELECT serialNumber,name,ST_X(location),ST_Y(location),state FROM vending_machine.vending_machine;";
+        ArrayList<MarkerEntity> markers = mapService.getVendingMachineInformation();
 
-        ExecuteSQL executeSQL = new ExecuteSQL();
-        executeSQL.setSql(sql);
-        executeSQL.setType(SQLExecuteTypeEnum.QUERY);
-        executeSQL.execute();
-
-        ResultSet rs = executeSQL.getResultSet();
-        try {
-            while (rs.next()) {
-                MarkerOptions markerOptions = new MarkerOptions();
-                LatLng latLng = new LatLng(
-                        rs.getDouble("ST_X(location)"), rs.getDouble("ST_Y(location)")
-                );
-                markerOptions.title(rs.getString("name"));
-                markerOptions.position(latLng);
-                markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.vending_machine2));
-                markerOptions.snippet(
-                        String.format(
-                                "%s,%s", rs.getString("state"), rs.getString("serialNumber")
-                        )
-                );
-                map.addMarker(markerOptions);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        for (MarkerEntity marker : markers) {
+            MarkerOptions markerOptions = new MarkerOptions();
+            LatLng latLng = new LatLng(
+                    marker.getLat(), marker.getLng()
+            );
+            markerOptions.title(marker.getName());
+            markerOptions.position(latLng);
+            markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.vending_machine2));
+            markerOptions.snippet(
+                    String.format(
+                            "%s,%s", marker.getState(), marker.getSerialNumber()
+                    )
+            );
+            map.addMarker(markerOptions);
         }
     }
 
@@ -224,7 +175,7 @@ public class NavigationDrawerActivity extends AppCompatActivity implements OnMap
                 ui.vendingStateTextView.setText(marker.getSnippet().split(",")[0]);
 
                 if (Objects.equals(marker.getSnippet().split(",")[0], "維修中"))
-                    ui.vendingStateTextView.setBackground(ContextCompat.getDrawable(NavigationDrawerActivity.this, R.drawable.red_background));
+                    ui.vendingStateTextView.setBackground(ContextCompat.getDrawable(GoogleMapActivity.this, R.drawable.red_background));
 
                 return ui.getRoot();
             }
@@ -238,7 +189,6 @@ public class NavigationDrawerActivity extends AppCompatActivity implements OnMap
                 return;
             }
 
-            // 會鎖畫面
             Intent intent = new Intent(this, VendingMachineActivity.class);
             intent.putExtra("data", data);
             startActivity(intent);
@@ -321,5 +271,9 @@ public class NavigationDrawerActivity extends AppCompatActivity implements OnMap
         } catch (SecurityException e)  {
             Log.e("Exception: %s", e.getMessage());
         }
+    }
+
+    private void enterMachineActivity() {
+
     }
 }

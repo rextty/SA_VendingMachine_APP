@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".VendingMachine">
+    tools:context=".VendingMachineActivity">
 
 <!--    <LinearLayout-->
 <!--        android:id="@+id/hLinearLayout"-->
@@ -73,39 +73,41 @@
         android:layout_weight="0.01">
 
         <TextView
-            android:id="@+id/preOrderButton"
+            android:id="@+id/titleTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="Pre order"
-            android:textColor="@color/colorBlue"
+            android:text="Product List"
+            android:textColor="@color/colorPrimary"
             android:textSize="24sp" />
     </LinearLayout>
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_weight="1">
 
         <LinearLayout
             android:id="@+id/scrollViewLinearLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" />
+            android:orientation="vertical" >
+        </LinearLayout>
     </ScrollView>
 
-
     <LinearLayout
+        android:id="@+id/buttonLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="0.01">
+        android:layout_weight="0.01"
+        android:orientation="horizontal">
 
         <Button
-            android:id="@+id/sendButton"
+            android:id="@+id/nextButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:text="Send" />
+            android:text="add to Shopping Cart" />
     </LinearLayout>
 
 </LinearLayout>

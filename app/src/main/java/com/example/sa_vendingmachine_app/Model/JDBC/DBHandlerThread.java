@@ -1,8 +1,10 @@
-package com.example.sa_vendingmachine_app.Model;
+package com.example.sa_vendingmachine_app.Model.JDBC;
 
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
+
+import com.example.sa_vendingmachine_app.Model.JDBC.SQLExecuteTypeEnum;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

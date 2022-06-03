@@ -1,6 +1,6 @@
 package com.example.sa_vendingmachine_app.Model.Entity;
 
-public class Message {
+public class MessageEntity {
 
     private String productId;
 
@@ -10,7 +10,7 @@ public class Message {
 
     private boolean isNotify;
 
-    public Message() {
+    public MessageEntity() {
         isNotify = false;
     }
 

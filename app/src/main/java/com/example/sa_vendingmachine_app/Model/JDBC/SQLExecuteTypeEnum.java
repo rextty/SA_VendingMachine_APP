@@ -1,4 +1,4 @@
-package com.example.sa_vendingmachine_app.Model;
+package com.example.sa_vendingmachine_app.Model.JDBC;
 
 public class SQLExecuteTypeEnum {
 

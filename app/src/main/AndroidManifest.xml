@@ -20,7 +20,19 @@
         tools:replace="android:allowBackup"
         tools:targetApi="31">
         <activity
-            android:name=".VendingMachine"
+            android:name=".MyOrderActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ReserveActivity"
+            android:exported="false" />
+        <activity
+            android:name=".GoogleMapActivity"
+            android:exported="false" />
+        <activity
+            android:name=".FunctionalActivity"
+            android:exported="false" />
+        <activity
+            android:name=".VendingMachineActivity"
             android:exported="false" />
         <!--
              TODO: Before you run your application, you need a Google Maps API key.

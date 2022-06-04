@@ -1,5 +1,7 @@
 package com.example.sa_vendingmachine_app.Model.JDBC;
 
+import com.example.sa_vendingmachine_app.Resource.MySQL;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -38,10 +40,6 @@ public class ExecuteSQL {
 
 class ExecuteSQLRunnable implements Runnable {
 
-    private String url = "jdbc:mysql://192.168.3.104:3306/Vending_Machine?useUnicode=true&characterEncodeing=UTF-8&useSSL=false&serverTimezone=GMT&allowPublicKeyRetrieval=true";
-    private String username = "vendingmachine";
-    private String password = "v1e2ndin4gma3ch6in1E";
-
     private Connection connection;
 
     private String sql;
@@ -64,7 +62,7 @@ class ExecuteSQLRunnable implements Runnable {
     public void run() {
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            connection = DriverManager.getConnection(url, username,password);
+            connection = DriverManager.getConnection(MySQL.url, MySQL.username, MySQL.password);
 
             switch (type) {
                 case SQLExecuteTypeEnum.QUERY:

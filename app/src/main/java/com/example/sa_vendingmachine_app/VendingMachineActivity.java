@@ -166,6 +166,9 @@ public class VendingMachineActivity extends AppCompatActivity {
     }
 
     private void showPayment() {
+        int amount = bank.getBalance();
+        int price = preOrder.getTotalPrice();
+
         scrollViewLinearLayout.removeAllViews();
 
         titleTextView.setText("Select Payment");
@@ -188,26 +191,23 @@ public class VendingMachineActivity extends AppCompatActivity {
 
         nextButton.setOnClickListener(v -> {
             if (findViewById(paymentRadioGroup.getCheckedRadioButtonId()) == null) {
-                Toast.makeText(this, "Please select payment.", Toast.LENGTH_SHORT).show();
+                showMsg("Please select payment.");
             }else {
-                checkoutShopCart();
+                checkoutShopCart(amount, price);
             }
         });
     }
 
     // TODO: Listener 不要用 new, 這樣就不會有一堆無用function
 
-    private void checkoutShopCart() {
-        int amount = bank.getBalance();
-        int price = preOrder.getTotalPrice();
-
+    private void checkoutShopCart(int amount, int price) {
         if (amount >= price) {
             bank.debit(price);
-            Toast.makeText(this, "Debit Success", Toast.LENGTH_SHORT).show();
+            showMsg("Debit Success");
 //            preOrder.setQrcode();
             preOrderService.savePreOrder(preOrder);
         }else {
-            Toast.makeText(this, "Insufficient balance", Toast.LENGTH_SHORT).show();
+            showMsg("Insufficient balance");
         }
         finish();
     }
@@ -220,7 +220,7 @@ public class VendingMachineActivity extends AppCompatActivity {
         }
 
         if (totalQuantity == 0) {
-            Toast.makeText(this, "shopping list is empty", Toast.LENGTH_SHORT).show();
+            showMsg("shopping list is empty");
             return;
         }
 
@@ -281,13 +281,13 @@ public class VendingMachineActivity extends AppCompatActivity {
         long difference = date2.getTime() - date1.getTime();
 
         if (difference <= 300000) {
-            Toast.makeText(this, "Please pick later than 5 min.", Toast.LENGTH_SHORT).show();
+            showMsg("Please pick later than 5 min.");
         }else if (!date.equals("Click to pick date") && !time.equals("Click to pick Time")) {
             preOrder.setExpireDate(dateTime);
             showShopCart();
 //            showPayment();
         }else {
-            Toast.makeText(this, "Please pick time.", Toast.LENGTH_SHORT).show();
+            showMsg("Please pick time.");
         }
     }
 
@@ -500,6 +500,6 @@ public class VendingMachineActivity extends AppCompatActivity {
     }
 
     private void showMsg(String msg) {
-
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 }

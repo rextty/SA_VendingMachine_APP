@@ -1,6 +1,7 @@
 package com.example.sa_vendingmachine_app.Service;
 
 
+import com.example.sa_vendingmachine_app.Model.DAO.MapDAO;
 import com.example.sa_vendingmachine_app.Model.DBMgr;
 import com.example.sa_vendingmachine_app.Model.Entity.MarkerEntity;
 
@@ -10,12 +11,12 @@ import java.util.ArrayList;
 
 public class MapService {
 
-    private DBMgr dbMgr = new DBMgr();
+    private MapDAO mapDAO = new MapDAO();
 
     public MapService() {}
 
     public ArrayList<MarkerEntity> getVendingMachineInformation() {
-        ResultSet resultSet = dbMgr.getMachineInformation();
+        ResultSet resultSet = mapDAO.getVendingMachineInformation();
 
         ArrayList<MarkerEntity> markers = new ArrayList<>();
 

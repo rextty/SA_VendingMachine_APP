@@ -1,6 +1,7 @@
 package com.example.sa_vendingmachine_app.Service;
 
 
+import com.example.sa_vendingmachine_app.Model.DAO.PreOrderDAO;
 import com.example.sa_vendingmachine_app.Model.DBMgr;
 import com.example.sa_vendingmachine_app.Model.Entity.PreOrder;
 import com.example.sa_vendingmachine_app.Model.Entity.Product;
@@ -11,19 +12,19 @@ import java.util.ArrayList;
 
 public class PreOrderService {
 
-    private DBMgr dbMgr = new DBMgr();
+    private PreOrderDAO preOrderDAO = new PreOrderDAO();
 
     public PreOrderService() {}
 
     public void savePreOrder(PreOrder preOrder) {
-        dbMgr.savePreOrderInformation(preOrder);
+        preOrderDAO.savePreOrderInformation(preOrder);
     }
 
     public ArrayList<PreOrder> getAllPreOrder() {
         ArrayList<PreOrder> preOrders = new ArrayList<>();
 
         try {
-            ResultSet resultSet = dbMgr.getAllPreOrder();
+            ResultSet resultSet = preOrderDAO.getAllPreOrder();
 
             while (resultSet.next()) {
                 PreOrder preOrder = new PreOrder();

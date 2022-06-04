@@ -3,6 +3,7 @@ package com.example.sa_vendingmachine_app.Service;
 
 import android.util.Log;
 
+import com.example.sa_vendingmachine_app.Model.DAO.ProductDAO;
 import com.example.sa_vendingmachine_app.Model.DBMgr;
 import com.example.sa_vendingmachine_app.Model.Entity.Product;
 
@@ -13,12 +14,12 @@ import java.util.ArrayList;
 //TODO:功能內聚
 public class ProductService {
 
-    private DBMgr dbMgr = new DBMgr();
+    private ProductDAO productDAO = new ProductDAO();
 
     public ProductService() {}
 
     public ArrayList<Product> getAllProduct() {
-        ResultSet resultSet = dbMgr.getProductInformation();
+        ResultSet resultSet = productDAO.getProductInformation();
 
         try {
             ArrayList<Product> productList = new ArrayList<>();
@@ -43,7 +44,7 @@ public class ProductService {
     public Product getProductByProductId(String productId) {
 
         try {
-            ResultSet resultSet = dbMgr.getProductByProductId(productId);
+            ResultSet resultSet = productDAO.getProductByProductId(productId);
 
             Product product = new Product();
 

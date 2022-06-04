@@ -1,23 +1,33 @@
 package com.example.sa_vendingmachine_app.Model.DAO;
 
-import com.example.sa_vendingmachine_app.Model.DBMgr;
-import com.example.sa_vendingmachine_app.Model.Entity.Product;
+import com.example.sa_vendingmachine_app.Model.JDBC.ExecuteSQL;
+import com.example.sa_vendingmachine_app.Model.JDBC.SQLExecuteTypeEnum;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 
 public class ProductDAO {
 
-    private DBMgr dbMgr = new DBMgr();
+    private final ExecuteSQL executeSQL = new ExecuteSQL();
 
     public ProductDAO() {}
 
     public ResultSet getProductInformation() {
-        return dbMgr.getProductInformation();
+        String sql = "SELECT * FROM vending_machine.product;";
+
+        executeSQL.setSql(sql);
+        executeSQL.setType(SQLExecuteTypeEnum.QUERY);
+        executeSQL.execute();
+
+        return executeSQL.getResultSet();
     }
 
     public ResultSet getProductByProductId(String productId) {
-        return dbMgr.getProductByProductId(productId);
+        String sql = "SELECT * FROM vending_machine.product WHERE `productId` = " + productId + ";";
+
+        executeSQL.setSql(sql);
+        executeSQL.setType(SQLExecuteTypeEnum.QUERY);
+        executeSQL.execute();
+
+        return executeSQL.getResultSet();
     }
 }

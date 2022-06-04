@@ -59,6 +59,8 @@ class ExecuteSQLRunnable implements Runnable {
         isExecuted = false;
     }
 
+    // TODO: SQL最佳化查詢
+
     public void run() {
         try {
             Class.forName("com.mysql.jdbc.Driver");

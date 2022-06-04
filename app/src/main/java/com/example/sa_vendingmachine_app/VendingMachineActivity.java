@@ -257,6 +257,8 @@ public class VendingMachineActivity extends AppCompatActivity {
         showPickTime();
     }
 
+    // TODO: QRCOde First
+
     private void saveTime() {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String currentTime = dtf.format(LocalDateTime.now());

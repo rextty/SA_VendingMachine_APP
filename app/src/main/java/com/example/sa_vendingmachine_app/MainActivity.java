@@ -49,13 +49,13 @@ public class MainActivity extends AppCompatActivity {
         // 檢查權限
         checkPermission();
 
-        Intent intent = new Intent();
+//        Intent intent = new Intent();
 //        intent.setClass(MainActivity.this, NavigationDrawerActivity.class);
 //        intent.setClass(MainActivity.this, FunctionalActivity.class);
-        intent.setClass(MainActivity.this, VendingMachineActivity.class);
-        startActivity(intent);
+//        intent.setClass(MainActivity.this, VendingMachineActivity.class);
+//        startActivity(intent);
 
-//        googleSignInClient.signOut();
+        googleSignInClient.signOut();
     }
 
     private void checkPermission() {
@@ -90,14 +90,15 @@ public class MainActivity extends AppCompatActivity {
                     Intent data = result.getData();
                     Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
                     try {
-                        Intent intent = new Intent();
-                        intent.setClass(MainActivity.this, NavigationDrawerActivity.class);
-                        startActivity(intent);
-
                         GoogleSignInAccount account = task.getResult(ApiException.class);
                         String msg = "登入成功\nEmail："+account.getEmail()+"\nGoogle名稱：" + account.getDisplayName();
                         Log.e(TAG, msg);
                         Log.d(TAG, "Token: " + account.getIdToken());
+
+                        Intent intent = new Intent();
+                        intent.putExtra("token", account.getIdToken());
+                        intent.setClass(MainActivity.this, FunctionalActivity.class);
+                        startActivity(intent);
                     } catch (ApiException e) {
                         Log.w(TAG, "Google sign in failed", e);
                     }

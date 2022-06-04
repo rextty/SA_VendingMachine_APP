@@ -11,7 +11,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-//TODO:功能內聚
 public class ProductService {
 
     private ProductDAO productDAO = new ProductDAO();
@@ -26,7 +25,7 @@ public class ProductService {
 
             while (resultSet.next()) {
                 Product product = new Product();
-                product.setProductId(resultSet.getString("productId"));
+                product.setId(resultSet.getInt("id"));
                 product.setQuantity(resultSet.getInt("quantity"));
                 product.setPrice(resultSet.getInt("price"));
                 product.setName(resultSet.getString("name"));
@@ -41,15 +40,15 @@ public class ProductService {
         }
     }
 
-    public Product getProductByProductId(String productId) {
+    public Product getProductByProductId(int id) {
 
         try {
-            ResultSet resultSet = productDAO.getProductByProductId(productId);
+            ResultSet resultSet = productDAO.getProductByProductId(id);
 
             Product product = new Product();
 
             if (resultSet.next()) {
-                product.setProductId(resultSet.getString("productId"));
+                product.setId(resultSet.getInt("id"));
                 product.setQuantity(resultSet.getInt("quantity"));
                 product.setPrice(resultSet.getInt("price"));
                 product.setName(resultSet.getString("name"));

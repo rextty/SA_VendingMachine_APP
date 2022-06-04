@@ -16,6 +16,7 @@ public class MapService {
     public MapService() {}
 
     public ArrayList<MarkerEntity> getVendingMachineInformation() {
+        // TODO: 拋錯找不到根源
         ResultSet resultSet = mapDAO.getVendingMachineInformation();
 
         ArrayList<MarkerEntity> markers = new ArrayList<>();
@@ -23,6 +24,7 @@ public class MapService {
         try {
             while (resultSet.next()) {
                 MarkerEntity marker = new MarkerEntity();
+                marker.setId(resultSet.getInt("id"));
                 marker.setLat(resultSet.getDouble("ST_X(location)"));
                 marker.setLng(resultSet.getDouble("ST_Y(location)"));
                 marker.setName(resultSet.getString("name"));

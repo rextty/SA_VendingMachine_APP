@@ -28,8 +28,8 @@ public class ShopCartService {
 
                 preOrder.setExpireDate(resultSet.getString("expireDate"));
                 preOrder.setTake(resultSet.getBoolean("isTake"));
-                preOrder.setMachineSerialNumber(resultSet.getString("machineSerialNumber"));
-                preOrder.setUserId(resultSet.getString("userId"));
+                preOrder.setMachineSerialNumber(resultSet.getInt("machineSerialNumber"));
+                preOrder.setUserId(resultSet.getInt("userId"));
 
                 preOrders.add(preOrder);
             }

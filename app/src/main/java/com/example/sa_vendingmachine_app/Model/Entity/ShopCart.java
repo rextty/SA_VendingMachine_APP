@@ -7,7 +7,7 @@ public class ShopCart {
 
     private int orderId;
 
-    private String productId;
+    private int productId;
 
     private int quantity;
 
@@ -17,7 +17,7 @@ public class ShopCart {
         this.quantity = quantity;
     }
 
-    public void setProductId(String productId) {
+    public void setProductId(int productId) {
         this.productId = productId;
     }
 
@@ -29,7 +29,7 @@ public class ShopCart {
         return quantity;
     }
 
-    public String getProductId() {
+    public int getProductId() {
         return productId;
     }
 

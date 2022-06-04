@@ -4,9 +4,11 @@ import java.sql.Blob;
 
 public class PreOrder {
 
-    private String machineSerialNumber;
+    private int id;
 
-    private String userId;
+    private int machineSerialNumber;
+
+    private int userId;
 
     private String expireDate;
 
@@ -25,7 +27,15 @@ public class PreOrder {
         this.expireDate = expireDate;
     }
 
-    public void setMachineSerialNumber(String machineSerialNumber) {
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
+
+    public void setMachineSerialNumber(int machineSerialNumber) {
         this.machineSerialNumber = machineSerialNumber;
     }
 
@@ -33,8 +43,8 @@ public class PreOrder {
         isTake = take;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public int getId() {
+        return id;
     }
 
     public void setTotalPrice(int totalPrice) {
@@ -49,11 +59,11 @@ public class PreOrder {
         return expireDate;
     }
 
-    public String getMachineSerialNumber() {
+    public int getMachineSerialNumber() {
         return machineSerialNumber;
     }
 
-    public String getUserId() {
+    public int getUserId() {
         return userId;
     }
 

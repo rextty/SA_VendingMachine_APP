@@ -128,7 +128,11 @@ public class VendingMachineActivity extends AppCompatActivity {
         scrollViewLinearLayout.addView(timeTextView);
 
         nextButton.setOnClickListener(v -> {
-            saveTime();
+            if (!dateTextView.getText().equals("Click to pick date") &&
+                    !timeTextView.getText().equals("Click to pick Time"))
+                saveTime();
+            else
+                showMsg("Please pick time.");
         });
     }
 
@@ -235,7 +239,7 @@ public class VendingMachineActivity extends AppCompatActivity {
                     Product product = (Product) obj[0];
 
                     ShopCart shopCart = new ShopCart();
-                    shopCart.setProductId(product.getProductId());
+                    shopCart.setProductId(product.getId());
                     shopCart.setQuantity(quantity);
 
                     shopCarts.add(shopCart);
@@ -250,7 +254,7 @@ public class VendingMachineActivity extends AppCompatActivity {
                     sqlList.add(sql);
                 }
                 preOrder.setTotalPrice(totalPrice);
-                preOrder.setMachineSerialNumber(vendingMachineSerialNumber);
+                preOrder.setMachineSerialNumber(Integer.parseInt(vendingMachineSerialNumber));
                 // TODO: set userId
             }
         }

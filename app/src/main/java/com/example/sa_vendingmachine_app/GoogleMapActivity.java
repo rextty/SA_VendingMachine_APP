@@ -129,7 +129,7 @@ public class GoogleMapActivity extends AppCompatActivity implements OnMapReadyCa
             markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.vending_machine2));
             markerOptions.snippet(
                     String.format(
-                            "%s,%s", marker.getState(), marker.getSerialNumber()
+                            "%s,%s", marker.getState(), marker.getId()
                     )
             );
             map.addMarker(markerOptions);
@@ -271,9 +271,5 @@ public class GoogleMapActivity extends AppCompatActivity implements OnMapReadyCa
         } catch (SecurityException e)  {
             Log.e("Exception: %s", e.getMessage());
         }
-    }
-
-    private void enterMachineActivity() {
-
     }
 }

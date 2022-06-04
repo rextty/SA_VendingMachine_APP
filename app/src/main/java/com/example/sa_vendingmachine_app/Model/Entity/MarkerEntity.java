@@ -2,11 +2,11 @@ package com.example.sa_vendingmachine_app.Model.Entity;
 
 public class MarkerEntity {
 
+    private int id;
+
     private double Lat;
 
     private double Lng;
-
-    private String serialNumber;
 
     private String name;
 
@@ -26,8 +26,8 @@ public class MarkerEntity {
         Lng = lng;
     }
 
-    public void setSerialNumber(String serialNumber) {
-        this.serialNumber = serialNumber;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public void setState(String state) {
@@ -46,8 +46,8 @@ public class MarkerEntity {
         return Lng;
     }
 
-    public String getSerialNumber() {
-        return serialNumber;
+    public int getId() {
+        return id;
     }
 
     public String getState() {

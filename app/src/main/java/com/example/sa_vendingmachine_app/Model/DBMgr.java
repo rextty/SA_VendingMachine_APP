@@ -17,7 +17,7 @@ public class DBMgr {
     public DBMgr() {}
 
     public ResultSet getMachineInformation() {
-        String sql = "SELECT serialNumber,name,ST_X(location),ST_Y(location),state FROM vending_machine.vending_machine;";
+        String sql = "SELECT id,name,ST_X(location),ST_Y(location),state FROM vending_machine.vending_machine;";
 
         executeSQL.setSql(sql);
         executeSQL.setType(SQLExecuteTypeEnum.QUERY);
@@ -58,8 +58,8 @@ public class DBMgr {
 
     public ResultSet savePreOrderInformation(PreOrder preOrder) {
         String sql = String.format("INSERT INTO vending_machine.pre_order " +
-                "(machineSerialNumber, userId, expireDate, isTake, qrcode) VALUES ('%s', '%s', '%s', %b, '%s');",
-                preOrder.getMachineSerialNumber(), preOrder.getUserId(), preOrder.getExpireDate(), false, preOrder.getQrcode()
+                "(expireDate, isTake, qrcode) VALUES ('%s', %b, '%s');",
+                preOrder.getExpireDate(), false, preOrder.getQrcode()
         );
 
         executeSQL.setSql(sql);

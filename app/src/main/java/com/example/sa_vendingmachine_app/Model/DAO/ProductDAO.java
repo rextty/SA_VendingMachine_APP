@@ -21,8 +21,8 @@ public class ProductDAO {
         return executeSQL.getResultSet();
     }
 
-    public ResultSet getProductByProductId(String productId) {
-        String sql = "SELECT * FROM vending_machine.product WHERE `productId` = " + productId + ";";
+    public ResultSet getProductByProductId(int id) {
+        String sql = "SELECT * FROM vending_machine.product WHERE `id` = " + id + ";";
 
         executeSQL.setSql(sql);
         executeSQL.setType(SQLExecuteTypeEnum.QUERY);

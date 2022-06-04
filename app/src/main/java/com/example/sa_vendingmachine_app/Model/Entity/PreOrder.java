@@ -4,13 +4,9 @@ import java.sql.Blob;
 
 public class PreOrder {
 
-    private String productId;
-
     private String machineSerialNumber;
 
     private String userId;
-
-    private String orderDate;
 
     private String expireDate;
 
@@ -18,10 +14,11 @@ public class PreOrder {
 
     private Blob qrcode;
 
-    public PreOrder() {}
+    private int totalPrice;
 
-    public void setProductId(String productId) {
-        this.productId = productId;
+    public PreOrder() {
+        this.isTake = false;
+        this.totalPrice = 0;
     }
 
     public void setExpireDate(String expireDate) {
@@ -32,10 +29,6 @@ public class PreOrder {
         this.machineSerialNumber = machineSerialNumber;
     }
 
-    public void setOrderDate(String orderDate) {
-        this.orderDate = orderDate;
-    }
-
     public void setTake(boolean take) {
         isTake = take;
     }
@@ -44,8 +37,12 @@ public class PreOrder {
         this.userId = userId;
     }
 
-    public String getProductId() {
-        return productId;
+    public void setTotalPrice(int totalPrice) {
+        this.totalPrice = totalPrice;
+    }
+
+    public void setQrcode(Blob qrcode) {
+        this.qrcode = qrcode;
     }
 
     public String getExpireDate() {
@@ -56,10 +53,6 @@ public class PreOrder {
         return machineSerialNumber;
     }
 
-    public String getOrderDate() {
-        return orderDate;
-    }
-
     public String getUserId() {
         return userId;
     }
@@ -68,11 +61,11 @@ public class PreOrder {
         return isTake;
     }
 
-    public void setQrcode(Blob qrcode) {
-        this.qrcode = qrcode;
-    }
-
     public Blob getQrcode() {
         return qrcode;
+    }
+
+    public int getTotalPrice() {
+        return totalPrice;
     }
 }

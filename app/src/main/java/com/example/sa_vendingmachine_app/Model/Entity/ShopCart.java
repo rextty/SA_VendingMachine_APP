@@ -5,28 +5,35 @@ import java.util.Map;
 
 public class ShopCart {
 
-    private Map<Product, Integer> cars = new HashMap<>();
+    private int orderId;
 
-    private int totalPrice = 0;
+    private String productId;
 
-    public ShopCart() {
+    private int quantity;
 
+    public ShopCart() {}
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
     }
 
-    public void setTotalPrice(int totalPrice) {
-        this.totalPrice = totalPrice;
+    public void setProductId(String productId) {
+        this.productId = productId;
     }
 
-    public Map<Product, Integer> getCars() {
-        return cars;
+    public void setOrderId(int orderId) {
+        this.orderId = orderId;
     }
 
-    public int getTotalPrice() {
-        return totalPrice;
+    public int getQuantity() {
+        return quantity;
     }
 
-    public void addProduct(Product product, int quantity) {
-        totalPrice += product.getPrice() * quantity;
-        cars.put(product, quantity);
+    public String getProductId() {
+        return productId;
+    }
+
+    public int getOrderId() {
+        return orderId;
     }
 }

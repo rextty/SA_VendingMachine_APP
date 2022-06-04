@@ -1,10 +1,14 @@
 package com.example.sa_vendingmachine_app.Model;
 
+import android.util.Log;
+
 import com.example.sa_vendingmachine_app.Model.Entity.PreOrder;
+import com.example.sa_vendingmachine_app.Model.Entity.Product;
 import com.example.sa_vendingmachine_app.Model.JDBC.ExecuteSQL;
 import com.example.sa_vendingmachine_app.Model.JDBC.SQLExecuteTypeEnum;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class DBMgr {
 
@@ -32,10 +36,30 @@ public class DBMgr {
         return executeSQL.getResultSet();
     }
 
+    public ResultSet getAllPreOrder() {
+        String sql = "SELECT * FROM vending_machine.pre_order;";
+
+        executeSQL.setSql(sql);
+        executeSQL.setType(SQLExecuteTypeEnum.QUERY);
+        executeSQL.execute();
+
+        return executeSQL.getResultSet();
+    }
+
+    public ResultSet getProductByProductId(String productId) {
+        String sql = "SELECT * FROM vending_machine.product WHERE `productId` = " + productId + ";";
+
+        executeSQL.setSql(sql);
+        executeSQL.setType(SQLExecuteTypeEnum.QUERY);
+        executeSQL.execute();
+
+        return executeSQL.getResultSet();
+    }
+
     public ResultSet savePreOrderInformation(PreOrder preOrder) {
         String sql = String.format("INSERT INTO vending_machine.pre_order " +
-                "(productId, machineSerialNumber, userId, expire_date, isTake, qrcode) VALUES ('%s', '%s', '%s', '%s', '%b', %s);",
-                preOrder.getProductId(), preOrder.getMachineSerialNumber(), preOrder.getUserId(), preOrder.getExpireDate(), false, preOrder.getQrcode()
+                "(machineSerialNumber, userId, expireDate, isTake, qrcode) VALUES ('%s', '%s', '%s', %b, '%s');",
+                preOrder.getMachineSerialNumber(), preOrder.getUserId(), preOrder.getExpireDate(), false, preOrder.getQrcode()
         );
 
         executeSQL.setSql(sql);
@@ -56,7 +80,7 @@ public class DBMgr {
     }
 
     public ResultSet getTimeInformation() {
-        String sql = "SELECT expire_date FROM vending_machine.pre_order;";
+        String sql = "SELECT expireDate FROM vending_machine.pre_order;";
 
         executeSQL.setSql(sql);
         executeSQL.setType(SQLExecuteTypeEnum.QUERY);
@@ -65,8 +89,14 @@ public class DBMgr {
         return executeSQL.getResultSet();
     }
 
-    public void getPreOrderByQRCode() {
+    public ResultSet getPreOrderByQRCode() {
+        String sql = "SELECT * FROM vending_machine.pre_order;";
 
+        executeSQL.setSql(sql);
+        executeSQL.setType(SQLExecuteTypeEnum.QUERY);
+        executeSQL.execute();
+
+        return executeSQL.getResultSet();
     }
 
     public void getOrderPriceByQRCode() {

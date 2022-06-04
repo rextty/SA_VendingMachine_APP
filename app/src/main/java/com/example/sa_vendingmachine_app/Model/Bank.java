@@ -2,23 +2,23 @@ package com.example.sa_vendingmachine_app.Model;
 
 public class Bank {
 
-    private int deposit = 1000;
+    private int balance = 1000;
 
     public Bank() {}
 
     public void refund(int amount) {
-        this.deposit += amount;
+        this.balance += amount;
     }
 
     public void debit(int amount) {
-        this.deposit -= amount;
+        this.balance -= amount;
     }
 
-    public void setDeposit(int deposit) {
-        this.deposit = deposit;
+    public void setBalance(int balance) {
+        this.balance = balance;
     }
 
-    public int getDeposit() {
-        return deposit;
+    public int getBalance() {
+        return balance;
     }
 }

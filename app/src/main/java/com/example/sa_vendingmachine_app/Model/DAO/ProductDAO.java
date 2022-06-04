@@ -1,7 +1,4 @@
-package com.example.sa_vendingmachine_app.Service;
-
-
-import android.util.Log;
+package com.example.sa_vendingmachine_app.Model.DAO;
 
 import com.example.sa_vendingmachine_app.Model.DBMgr;
 import com.example.sa_vendingmachine_app.Model.Entity.Product;
@@ -10,12 +7,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-//TODO:功能內聚
-public class ProductService {
+public class ProductDAO {
 
     private DBMgr dbMgr = new DBMgr();
 
-    public ProductService() {}
+    public ProductDAO() {}
 
     public ArrayList<Product> getAllProduct() {
         ResultSet resultSet = dbMgr.getProductInformation();

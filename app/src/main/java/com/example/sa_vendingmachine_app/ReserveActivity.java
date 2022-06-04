@@ -19,15 +19,12 @@ public class ReserveActivity extends AppCompatActivity {
         UI = ActivityReserveBinding.inflate(getLayoutInflater());
         setContentView(UI.getRoot());
 
-
-        UI.mapButton.setOnClickListener(v -> {
-            enterMapActivity();
-        });
+        UI.mapButton.setOnClickListener(enterMapActivity);
     }
 
-    public void enterMapActivity() {
+    private View.OnClickListener enterMapActivity = v -> {
         Intent intent = new Intent();
         intent.setClass(ReserveActivity.this, GoogleMapActivity.class);
         startActivity(intent);
-    }
+    };
 }

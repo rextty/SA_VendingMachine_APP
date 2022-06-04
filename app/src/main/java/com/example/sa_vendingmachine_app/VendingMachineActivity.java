@@ -34,16 +34,18 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Map;
 
 public class VendingMachineActivity extends AppCompatActivity {
     private static final String TAG = VendingMachineActivity.class.getSimpleName();
 
     private ActivityVendingMachineBinding UI;
 
+    private Button nextButton;
     private TextView titleTextView;
     private TextView dateTextView;
     private TextView timeTextView;
-    private Button nextButton;
+    private RadioGroup paymentRadioGroup;
     private LinearLayout scrollViewLinearLayout;
 
     private String vendingMachineSerialNumber;
@@ -52,7 +54,7 @@ public class VendingMachineActivity extends AppCompatActivity {
 
     private Bank bank = new Bank();
     private PreOrder preOrder = new PreOrder();
-    private ShopCart shopCart = new ShopCart();
+    private ArrayList<ShopCart> shopCarts = new ArrayList<>();
     private ProductService productService = new ProductService();
     private PreOrderService preOrderService = new PreOrderService();
 
@@ -70,16 +72,9 @@ public class VendingMachineActivity extends AppCompatActivity {
         titleTextView = UI.titleTextView;
         nextButton = UI.nextButton;
 
-        initChooseProduct();
         initProductItem();
 //        showPickTime();
 //        showPayment();
-    }
-
-    private void initChooseProduct() {
-        nextButton.setOnClickListener(v -> {
-            saveToShopCart();
-        });
     }
 
     private void showPickTime() {
@@ -176,7 +171,7 @@ public class VendingMachineActivity extends AppCompatActivity {
         titleTextView.setText("Select Payment");
         nextButton.setText("Next");
 
-        RadioGroup radioGroup = new RadioGroup(this);
+        paymentRadioGroup = new RadioGroup(this);
 
         RadioButton creditRadioButton = new RadioButton(this);
         creditRadioButton.setText("Credit Card");
@@ -184,52 +179,48 @@ public class VendingMachineActivity extends AppCompatActivity {
         RadioButton lineRadioButton = new RadioButton(this);
         lineRadioButton.setText("line pay");
 
-        radioGroup.addView(creditRadioButton);
-        radioGroup.addView(lineRadioButton);
+        paymentRadioGroup.addView(creditRadioButton);
+        paymentRadioGroup.addView(lineRadioButton);
 
-        radioGroup.setPadding(50, 0, 0, 0);
+        paymentRadioGroup.setPadding(50, 0, 0, 0);
 
-        scrollViewLinearLayout.addView(radioGroup);
+        scrollViewLinearLayout.addView(paymentRadioGroup);
 
         nextButton.setOnClickListener(v -> {
-            checkoutShopCart();
+            if (findViewById(paymentRadioGroup.getCheckedRadioButtonId()) == null) {
+                Toast.makeText(this, "Please select payment.", Toast.LENGTH_SHORT).show();
+            }else {
+                checkoutShopCart();
+            }
         });
     }
 
-    private void checkoutShopCart() {
-        confirmCheckoutPrice();
-    }
+    // TODO: Listener 不要用 new, 這樣就不會有一堆無用function
 
-    private void confirmCheckoutPrice() {
-        int amount = bank.getDeposit();
-        int price = shopCart.getTotalPrice();
+    private void checkoutShopCart() {
+        int amount = bank.getBalance();
+        int price = preOrder.getTotalPrice();
 
         if (amount >= price) {
-            creditCardDebit(price);
-            Toast.makeText(this, "Debit Success", Toast.LENGTH_LONG).show();
-            produceQRCode();
+            bank.debit(price);
+            Toast.makeText(this, "Debit Success", Toast.LENGTH_SHORT).show();
+//            preOrder.setQrcode();
+            preOrderService.savePreOrder(preOrder);
         }else {
-            Toast.makeText(this, "Insufficient balance", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Insufficient balance", Toast.LENGTH_SHORT).show();
         }
         finish();
     }
 
-    private void produceQRCode() {
-        saveOrderInfo();
-    }
-
-    private void creditCardDebit(int price) {
-        bank.debit(price);
-    }
-
     private void saveToShopCart() {
+        int totalPrice = 0;
         int totalQuantity = 0;
         for (Object[] obj : productList) {
             totalQuantity += Integer.parseInt(((TextView) obj[1]).getText().toString());
         }
 
         if (totalQuantity == 0) {
-            Toast.makeText(this, "shopping list is empty", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "shopping list is empty", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -242,7 +233,13 @@ public class VendingMachineActivity extends AppCompatActivity {
             if (quantity != 0) {
                 for (int i = 0; i < quantity; i++) {
                     Product product = (Product) obj[0];
-                    shopCart.addProduct(product, quantity);
+
+                    ShopCart shopCart = new ShopCart();
+                    shopCart.setProductId(product.getProductId());
+                    shopCart.setQuantity(quantity);
+
+                    shopCarts.add(shopCart);
+                    totalPrice += product.getPrice() * shopCart.getQuantity();
 
                     String sql = String.format(
                             "INSERT INTO vending_machine.sales_record (productId, machineSerialNumber, date) VALUES ('%s', '%s', '%s');",
@@ -252,13 +249,12 @@ public class VendingMachineActivity extends AppCompatActivity {
                     );
                     sqlList.add(sql);
                 }
+                preOrder.setTotalPrice(totalPrice);
+                preOrder.setMachineSerialNumber(vendingMachineSerialNumber);
+                // TODO: set userId
             }
         }
         showPickTime();
-    }
-
-    private void addProduct(Object[] data) {
-        productList.add(data);
     }
 
     private void saveTime() {
@@ -285,17 +281,118 @@ public class VendingMachineActivity extends AppCompatActivity {
         long difference = date2.getTime() - date1.getTime();
 
         if (difference <= 300000) {
-            Toast.makeText(this, "Please pick later than 5 min.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Please pick later than 5 min.", Toast.LENGTH_SHORT).show();
         }else if (!date.equals("Click to pick date") && !time.equals("Click to pick Time")) {
-            preOrder.setExpireDate(String.format("%s %s", date, time));
-            showPayment();
+            preOrder.setExpireDate(dateTime);
+            showShopCart();
+//            showPayment();
         }else {
-            Toast.makeText(this, "Please pick time.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Please pick time.", Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void saveOrderInfo() {
-        preOrderService.savePreOrder(preOrder);
+    @SuppressLint("SetTextI18n")
+    private void showShopCart() {
+        titleTextView.setText("Shop Cart");
+        nextButton.setText("Next");
+
+        scrollViewLinearLayout.removeAllViews();
+
+        TextView totalPriceTextView = new TextView(this);
+
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT
+        );
+        params.gravity = Gravity.TOP;
+
+        scrollViewLinearLayout.setOrientation(LinearLayout.VERTICAL);
+        scrollViewLinearLayout.setLayoutParams(params);
+
+        for (ShopCart shopCart : shopCarts) {
+            productService = new ProductService();
+
+            Product product = productService.getProductByProductId(shopCart.getProductId());
+
+            LinearLayout linearLayout = new LinearLayout(this);
+            ImageView imageView = new ImageView(this);
+            LinearLayout verticalLinearLayout = new LinearLayout(this);
+            TextView productNameTextView = new TextView(this);
+            TextView productPriceTextView = new TextView(this);
+            TextView quantityTextView = new TextView(this);
+
+            LinearLayout.LayoutParams linearLayoutParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+            linearLayoutParams.gravity = Gravity.CENTER;
+            linearLayoutParams.setMargins(0, 5, 0, 0);
+            linearLayout.setPadding(0, 0, 0, 20);
+            linearLayout.setLayoutParams(linearLayoutParams);
+
+            LinearLayout.LayoutParams imageViewLayoutParams = new LinearLayout.LayoutParams(
+                    130,
+                    130
+            );
+            imageViewLayoutParams.setMargins(0, 0, 10, 0);
+            imageView.setLayoutParams(imageViewLayoutParams);
+
+            LinearLayout.LayoutParams verticalLinearLayoutParams = new LinearLayout.LayoutParams(
+                    470,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+            verticalLinearLayoutParams.setMargins(0, 0, 50, 0);
+            verticalLinearLayout.setGravity(Gravity.CENTER);
+            verticalLinearLayout.setOrientation(LinearLayout.VERTICAL);
+            verticalLinearLayout.setLayoutParams(verticalLinearLayoutParams);
+
+            LinearLayout.LayoutParams textViewLayoutParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+            productNameTextView.setLayoutParams(textViewLayoutParams);
+            productPriceTextView.setLayoutParams(textViewLayoutParams);
+
+            productNameTextView.setTextSize(18);
+            productPriceTextView.setTextSize(18);
+
+            LinearLayout.LayoutParams buttonLayoutParams = new LinearLayout.LayoutParams(
+                    110,
+                    120
+            );
+            buttonLayoutParams.setMargins(0, 0, 10, 0);
+
+            LinearLayout.LayoutParams quantityLayoutParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+            quantityLayoutParams.setMargins(0, 0, 10, 0);
+            quantityLayoutParams.gravity = Gravity.CENTER;
+            quantityTextView.setLayoutParams(quantityLayoutParams);
+
+            imageView.setImageResource(R.drawable.line_icon);
+            productNameTextView.setText(product.getName());
+            productPriceTextView.setText(String.valueOf(product.getPrice()));
+            quantityTextView.setText(String.valueOf(shopCart.getQuantity()));
+
+            verticalLinearLayout.addView(productNameTextView);
+            verticalLinearLayout.addView(productPriceTextView);
+
+            linearLayout.addView(imageView);
+            linearLayout.addView(verticalLinearLayout);
+            linearLayout.addView(quantityTextView);
+
+            scrollViewLinearLayout.addView(linearLayout);
+        }
+
+        totalPriceTextView.setGravity(Gravity.CENTER);
+        totalPriceTextView.setText("Total Price: " + preOrder.getTotalPrice());
+
+        scrollViewLinearLayout.addView(totalPriceTextView);
+
+        nextButton.setOnClickListener(v -> {
+            showPayment();
+        });
     }
 
     private void initProductItem() {
@@ -364,7 +461,7 @@ public class VendingMachineActivity extends AppCompatActivity {
             quantityLayoutParams.setMargins(0, 0, 10, 0);
             quantityTextView.setLayoutParams(quantityLayoutParams);
 
-            addProduct(new Object[] {product, quantityTextView});
+            productList.add(new Object[] {product, quantityTextView});
 
             imageView.setImageResource(R.drawable.line_icon);
             productNameTextView.setText(product.getName());
@@ -396,5 +493,13 @@ public class VendingMachineActivity extends AppCompatActivity {
 
             scrollViewLinearLayout.addView(linearLayout);
         }
+
+        nextButton.setOnClickListener(v -> {
+            saveToShopCart();
+        });
+    }
+
+    private void showMsg(String msg) {
+
     }
 }

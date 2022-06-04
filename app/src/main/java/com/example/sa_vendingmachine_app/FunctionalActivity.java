@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 
 import com.example.sa_vendingmachine_app.databinding.ActivityFunctionalBinding;
 
@@ -18,24 +19,19 @@ public class FunctionalActivity extends AppCompatActivity {
         UI = ActivityFunctionalBinding.inflate(getLayoutInflater());
         setContentView(UI.getRoot());
 
-        UI.reserveButton.setOnClickListener(v -> {
-            enterMapActivity();
-        });
-
-        UI.myOrderButton.setOnClickListener(v -> {
-            enterMyOrderActivity();
-        });
+        UI.reserveButton.setOnClickListener(enterMapActivity);
+        UI.myOrderButton.setOnClickListener(enterMyOrderActivity);
     }
 
-    public void enterMapActivity() {
+    private View.OnClickListener enterMapActivity = v -> {
         Intent intent = new Intent();
         intent.setClass(FunctionalActivity.this, ReserveActivity.class);
         startActivity(intent);
-    }
+    };
 
-    public void enterMyOrderActivity() {
+    private View.OnClickListener enterMyOrderActivity = v -> {
         Intent intent = new Intent();
         intent.setClass(FunctionalActivity.this, MyOrderActivity.class);
         startActivity(intent);
-    }
+    };
 }

@@ -2,13 +2,25 @@ package com.example.sa_vendingmachine_app.Model.Entity;
 
 public class SalesRecord {
 
-    private String productId;
+    private int productId;
+
+    private int machineSerialNumber;
 
     private String date;
 
+    private int userId;
+
     public SalesRecord() {}
 
-    public void setProductId(String productId) {
+    public void setMachineSerialNumber(int machineSerialNumber) {
+        this.machineSerialNumber = machineSerialNumber;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
+
+    public void setProductId(int productId) {
         this.productId = productId;
     }
 
@@ -16,7 +28,15 @@ public class SalesRecord {
         this.date = date;
     }
 
-    public String getProductId() {
+    public int getUserId() {
+        return userId;
+    }
+
+    public int getMachineSerialNumber() {
+        return machineSerialNumber;
+    }
+
+    public int getProductId() {
         return productId;
     }
 

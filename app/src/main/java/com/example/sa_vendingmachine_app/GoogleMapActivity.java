@@ -190,6 +190,7 @@ public class GoogleMapActivity extends AppCompatActivity implements OnMapReadyCa
             }
 
             Intent intent = new Intent(this, VendingMachineActivity.class);
+            intent.putExtra("token", getIntent().getStringExtra("token"));
             intent.putExtra("data", data);
             startActivity(intent);
         });

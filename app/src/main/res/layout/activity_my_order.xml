@@ -77,7 +77,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="Product List"
+            android:text="My Order"
             android:textColor="@color/colorPrimary"
             android:textSize="24sp" />
     </LinearLayout>
@@ -101,13 +101,6 @@
         android:layout_height="wrap_content"
         android:layout_weight="0.01"
         android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/nextButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="add to Shopping Cart" />
     </LinearLayout>
 
 </LinearLayout>

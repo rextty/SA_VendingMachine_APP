@@ -19,6 +19,8 @@ public class FunctionalActivity extends AppCompatActivity {
 
     private UserService userService = new UserService();
 
+    private String token;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,22 +37,23 @@ public class FunctionalActivity extends AppCompatActivity {
         UI.myOrderButton.setOnClickListener(enterMyOrderActivity);
     }
 
-    private void checkUser(String token) {
-        token = token.substring(400, 420);
+    private void checkUser(String mToken) {
+        mToken = mToken.substring(400, 420);
 
-        User user = userService.getUser(token);
+        User user = userService.getUser(mToken);
 
         if (user != null) {
+            token = mToken;
             int permission = user.getPermission();
 
             if (permission == 0) {
-                Log.e(TAG, "checkUser: Normal");
+                Log.e(TAG, "checkUser: Normal " + mToken);
             }else {
-                Log.e(TAG, "checkUser: Manager");
+                Log.e(TAG, "checkUser: Manager " + mToken);
             }
         }else {
             User newUser = new User();
-            newUser.setToken(token);
+            newUser.setToken(mToken);
             newUser.setPermission(0);
             userService.saveUser(newUser);
         }
@@ -58,12 +61,14 @@ public class FunctionalActivity extends AppCompatActivity {
 
     private View.OnClickListener enterMapActivity = v -> {
         Intent intent = new Intent();
+        intent.putExtra("token", token);
         intent.setClass(FunctionalActivity.this, ReserveActivity.class);
         startActivity(intent);
     };
 
     private View.OnClickListener enterMyOrderActivity = v -> {
         Intent intent = new Intent();
+        intent.putExtra("token", token);
         intent.setClass(FunctionalActivity.this, MyOrderActivity.class);
         startActivity(intent);
     };

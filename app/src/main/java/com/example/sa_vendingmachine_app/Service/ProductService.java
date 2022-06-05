@@ -29,7 +29,7 @@ public class ProductService {
                 product.setQuantity(resultSet.getInt("quantity"));
                 product.setPrice(resultSet.getInt("price"));
                 product.setName(resultSet.getString("name"));
-                product.setImage(resultSet.getString("image"));
+                product.setImage(resultSet.getBlob("image"));
 
                 productList.add(product);
             }
@@ -52,7 +52,7 @@ public class ProductService {
                 product.setQuantity(resultSet.getInt("quantity"));
                 product.setPrice(resultSet.getInt("price"));
                 product.setName(resultSet.getString("name"));
-                product.setImage(resultSet.getString("image"));
+                product.setImage(resultSet.getBlob("image"));
 
                 return product;
             }

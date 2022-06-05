@@ -36,34 +36,11 @@ public class DBMgr {
         return executeSQL.getResultSet();
     }
 
-    public ResultSet getAllPreOrder() {
-        String sql = "SELECT * FROM vending_machine.pre_order;";
-
-        executeSQL.setSql(sql);
-        executeSQL.setType(SQLExecuteTypeEnum.QUERY);
-        executeSQL.execute();
-
-        return executeSQL.getResultSet();
-    }
-
     public ResultSet getProductByProductId(String productId) {
         String sql = "SELECT * FROM vending_machine.product WHERE `productId` = " + productId + ";";
 
         executeSQL.setSql(sql);
         executeSQL.setType(SQLExecuteTypeEnum.QUERY);
-        executeSQL.execute();
-
-        return executeSQL.getResultSet();
-    }
-
-    public ResultSet savePreOrderInformation(PreOrder preOrder) {
-        String sql = String.format("INSERT INTO vending_machine.pre_order " +
-                "(expireDate, isTake, qrcode) VALUES ('%s', %b, '%s');",
-                preOrder.getExpireDate(), false, preOrder.getQrcode()
-        );
-
-        executeSQL.setSql(sql);
-        executeSQL.setType(SQLExecuteTypeEnum.UPDATE);
         executeSQL.execute();
 
         return executeSQL.getResultSet();

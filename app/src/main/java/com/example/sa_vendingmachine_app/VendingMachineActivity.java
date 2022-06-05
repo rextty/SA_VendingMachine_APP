@@ -6,6 +6,9 @@ import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -22,11 +25,25 @@ import android.widget.Toast;
 import com.example.sa_vendingmachine_app.Model.Bank;
 import com.example.sa_vendingmachine_app.Model.Entity.PreOrder;
 import com.example.sa_vendingmachine_app.Model.Entity.Product;
+import com.example.sa_vendingmachine_app.Model.Entity.SalesRecord;
 import com.example.sa_vendingmachine_app.Model.Entity.ShopCart;
+import com.example.sa_vendingmachine_app.Model.Entity.User;
 import com.example.sa_vendingmachine_app.Service.PreOrderService;
 import com.example.sa_vendingmachine_app.Service.ProductService;
+import com.example.sa_vendingmachine_app.Service.SalesRecordService;
+import com.example.sa_vendingmachine_app.Service.UserService;
 import com.example.sa_vendingmachine_app.databinding.ActivityVendingMachineBinding;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.sql.Blob;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -48,15 +65,21 @@ public class VendingMachineActivity extends AppCompatActivity {
     private RadioGroup paymentRadioGroup;
     private LinearLayout scrollViewLinearLayout;
 
-    private String vendingMachineSerialNumber;
-    private ArrayList<String> sqlList = new ArrayList<>();
+    private int vendingMachineSerialNumber;
+    private ArrayList<SalesRecord> salesRecords = new ArrayList<>();
     private ArrayList<Object[]> productList = new ArrayList<>();
 
+    private String token;
+
     private Bank bank = new Bank();
+    private User user = new User();
     private PreOrder preOrder = new PreOrder();
     private ArrayList<ShopCart> shopCarts = new ArrayList<>();
+
+    private UserService userService = new UserService();
     private ProductService productService = new ProductService();
     private PreOrderService preOrderService = new PreOrderService();
+    private SalesRecordService salesRecordService = new SalesRecordService();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,11 +89,14 @@ public class VendingMachineActivity extends AppCompatActivity {
         setContentView(UI.getRoot());
 
         Intent intent = this.getIntent();
-        vendingMachineSerialNumber =  intent.getStringExtra("data");
+        vendingMachineSerialNumber =  Integer.parseInt(intent.getStringExtra("data"));
 
         scrollViewLinearLayout = UI.scrollViewLinearLayout;
         titleTextView = UI.titleTextView;
         nextButton = UI.nextButton;
+
+        token = getIntent().getStringExtra("token");
+        user = userService.getUser(token);
 
         initProductItem();
 //        showPickTime();
@@ -202,23 +228,55 @@ public class VendingMachineActivity extends AppCompatActivity {
         });
     }
 
-    // TODO: Listener 不要用 new, 這樣就不會有一堆無用function
-
     private void checkoutShopCart(int amount, int price) {
         if (amount >= price) {
             bank.debit(price);
             showMsg("Debit Success");
-//            preOrder.setQrcode();
-            preOrderService.savePreOrder(preOrder);
+
+            for (SalesRecord salesRecord : salesRecords)
+                salesRecordService.saveSalesRecord(salesRecord);
+            // Always is 0, cuz not yet save to db
+            // String id = String.valueOf(preOrder.getId());
+
+            String id = String.valueOf(preOrderService.getIndex() + 1);
+            ByteArrayInputStream bs = encodeAsBitmap(id);
+            preOrderService.savePreOrder(preOrder, bs);
         }else {
             showMsg("Insufficient balance");
         }
         finish();
     }
 
+    private ByteArrayInputStream encodeAsBitmap(String str) {
+        try {
+            QRCodeWriter writer = new QRCodeWriter();
+            BitMatrix bitMatrix = writer.encode(str, BarcodeFormat.QR_CODE, 400, 400);
+            int w = bitMatrix.getWidth();
+            int h = bitMatrix.getHeight();
+            int[] pixels = new int[w * h];
+            for (int y = 0; y < h; y++) {
+                for (int x = 0; x < w; x++) {
+                    pixels[y * w + x] = bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE;
+                }
+            }
+            Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+            bitmap.setPixels(pixels, 0, w, 0, 0, w, h);
+
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 0 /*ignored for PNG*/, bos);
+            byte[] bitmaps = bos.toByteArray();
+
+            return new ByteArrayInputStream(bitmaps);
+        } catch (WriterException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     private void saveToShopCart() {
         int totalPrice = 0;
         int totalQuantity = 0;
+
         for (Object[] obj : productList) {
             totalQuantity += Integer.parseInt(((TextView) obj[1]).getText().toString());
         }
@@ -241,20 +299,20 @@ public class VendingMachineActivity extends AppCompatActivity {
                     ShopCart shopCart = new ShopCart();
                     shopCart.setProductId(product.getId());
                     shopCart.setQuantity(quantity);
-
                     shopCarts.add(shopCart);
+
                     totalPrice += product.getPrice() * shopCart.getQuantity();
 
-                    String sql = String.format(
-                            "INSERT INTO vending_machine.sales_record (productId, machineSerialNumber, date) VALUES ('%s', '%s', '%s');",
-                            obj[0],
-                            vendingMachineSerialNumber,
-                            simpleDateFormat.format(new java.util.Date())
-                    );
-                    sqlList.add(sql);
+                    SalesRecord salesRecord = new SalesRecord();
+                    salesRecord.setMachineSerialNumber(vendingMachineSerialNumber);
+                    salesRecord.setProductId(product.getId());
+                    salesRecord.setDate(simpleDateFormat.format(new java.util.Date()));
+                    salesRecords.add(salesRecord);
+
+                    preOrder.setUserId(user.getId());
+                    preOrder.setMachineSerialNumber(vendingMachineSerialNumber);
+                    preOrder.setTotalPrice(totalPrice);
                 }
-                preOrder.setTotalPrice(totalPrice);
-                preOrder.setMachineSerialNumber(Integer.parseInt(vendingMachineSerialNumber));
                 // TODO: set userId
             }
         }
@@ -376,7 +434,14 @@ public class VendingMachineActivity extends AppCompatActivity {
             quantityLayoutParams.gravity = Gravity.CENTER;
             quantityTextView.setLayoutParams(quantityLayoutParams);
 
-            imageView.setImageResource(R.drawable.line_icon);
+            imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+            imageView.setAdjustViewBounds(true);
+            try {
+                imageView.setImageBitmap(BitmapFactory.decodeStream(new BufferedInputStream(product.getImage().getBinaryStream())));
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
             productNameTextView.setText(product.getName());
             productPriceTextView.setText(String.valueOf(product.getPrice()));
             quantityTextView.setText(String.valueOf(shopCart.getQuantity()));
@@ -469,7 +534,14 @@ public class VendingMachineActivity extends AppCompatActivity {
 
             productList.add(new Object[] {product, quantityTextView});
 
-            imageView.setImageResource(R.drawable.line_icon);
+            imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+            imageView.setAdjustViewBounds(true);
+            try {
+                imageView.setImageBitmap(BitmapFactory.decodeStream(new BufferedInputStream(product.getImage().getBinaryStream())));
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
             productNameTextView.setText(product.getName());
             productPriceTextView.setText(String.format("$%s", product.getPrice()));
             quantityTextView.setText("0");

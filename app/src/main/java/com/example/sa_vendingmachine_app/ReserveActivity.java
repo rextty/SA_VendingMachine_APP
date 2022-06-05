@@ -24,6 +24,7 @@ public class ReserveActivity extends AppCompatActivity {
 
     private View.OnClickListener enterMapActivity = v -> {
         Intent intent = new Intent();
+        intent.putExtra("token", getIntent().getStringExtra("token"));
         intent.setClass(ReserveActivity.this, GoogleMapActivity.class);
         startActivity(intent);
     };

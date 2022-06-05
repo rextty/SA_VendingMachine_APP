@@ -6,6 +6,7 @@ import com.example.sa_vendingmachine_app.Model.DBMgr;
 import com.example.sa_vendingmachine_app.Model.Entity.PreOrder;
 import com.example.sa_vendingmachine_app.Model.Entity.Product;
 
+import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -16,8 +17,31 @@ public class PreOrderService {
 
     public PreOrderService() {}
 
-    public void savePreOrder(PreOrder preOrder) {
-        preOrderDAO.savePreOrderInformation(preOrder);
+    public void savePreOrder(PreOrder preOrder, InputStream in) {
+        preOrderDAO.savePreOrderInformation(preOrder, in);
+    }
+
+    public ArrayList<PreOrder> getPreOrder(int userId) {
+        ArrayList<PreOrder> preOrders = new ArrayList<>();
+
+        try {
+            ResultSet resultSet = preOrderDAO.getPreOrderByUserId(userId);
+
+            while (resultSet.next()) {
+                PreOrder preOrder = new PreOrder();
+                preOrder.setExpireDate(resultSet.getString("expireDate"));
+                preOrder.setTake(resultSet.getBoolean("isTake"));
+                preOrder.setMachineSerialNumber(resultSet.getInt("machineSerialNumber"));
+                preOrder.setUserId(resultSet.getInt("userId"));
+                preOrder.setTotalPrice(resultSet.getInt("totalPrice"));
+                preOrder.setQrcode(resultSet.getBlob("qrcode"));
+
+                preOrders.add(preOrder);
+            }
+            return preOrders;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public ArrayList<PreOrder> getAllPreOrder() {
@@ -41,10 +65,23 @@ public class PreOrderService {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
     }
 
-    public void deleteOrderById() {
+    public int getIndex() {
+        ResultSet resultSet = preOrderDAO.getLatestId();
 
+        try {
+            if (resultSet.next()) {
+                return resultSet.getInt("MAX(id)");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return 0;
+    }
+
+    public ResultSet updatePreOrder(PreOrder preOrder) {
+        return preOrderDAO.updatePreOrder(preOrder);
     }
 }

@@ -1,5 +1,7 @@
 package com.example.sa_vendingmachine_app.Model.Entity;
 
+import java.sql.Blob;
+
 public class Product {
 
     private int id;
@@ -10,7 +12,7 @@ public class Product {
 
     private String name;
 
-    private String image;
+    private Blob image;
 
     public Product() {}
 
@@ -30,7 +32,7 @@ public class Product {
         this.name = name;
     }
 
-    public void setImage(String image) {
+    public void setImage(Blob image) {
         this.image = image;
     }
 
@@ -46,7 +48,7 @@ public class Product {
         return name;
     }
 
-    public String getImage() {
+    public Blob getImage() {
         return image;
     }
 
